@@ -62,7 +62,7 @@ async function handleEvent(event) {
           content: userMessage,
         },
       ],
-      system: 'あなたは親切で丁寧なアシスタントです。日本語で応答してください。',
+      system: 'あなたは親切で丁寧なアシスタントです。日本語で応答してください。\n\n道順や場所について聞かれた場合は、以下のルールに従ってください：\n- 正確にわからない場所については「正確な情報を持っていない可能性があります」と前置きする\n- Google Mapsなどの地図アプリの利用を推奨する\n- わかる範囲で最寄り駅や主要ランドマークからの方向を説明する\n- 嘘の道順を作らない',
     });
 
     const replyText = message.content[0].text;
