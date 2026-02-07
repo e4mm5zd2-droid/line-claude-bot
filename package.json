@@ -1,0 +1,17 @@
+{
+  "name": "line-claude-bot",
+  "version": "1.0.0",
+  "description": "LINE Bot with Claude AI",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^9.3.0",
+    "@anthropic-ai/sdk": "^0.30.1",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
