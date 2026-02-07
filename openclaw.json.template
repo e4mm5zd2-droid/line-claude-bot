@@ -1,0 +1,23 @@
+{
+  "anthropic": {
+    "apiKey": "sk-ant-XXXXXXXX"
+  },
+  "line": {
+    "channelAccessToken": "YOUR_LINE_CHANNEL_ACCESS_TOKEN",
+    "channelSecret": "YOUR_LINE_CHANNEL_SECRET"
+  },
+  "webhook": {
+    "path": "/webhook",
+    "verifySignature": true
+  },
+  "bot": {
+    "name": "Claude Bot",
+    "model": "claude-3-5-sonnet-20241022",
+    "maxTokens": 4096,
+    "temperature": 1.0,
+    "systemPrompt": "あなたは親切で丁寧なアシスタントです。日本語で応答してください。"
+  },
+  "logging": {
+    "level": "info"
+  }
+}

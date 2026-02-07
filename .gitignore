@@ -1,0 +1,38 @@
+# Git用の無視ファイル設定
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 環境変数・シークレット
+.env
+.env.local
+.env.*.local
+openclaw.json
+*.key
+*.pem
+
+# ログ
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# テスト
+coverage/
+.nyc_output/
+
+# ビルド成果物
+dist/
+build/
