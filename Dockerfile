@@ -3,20 +3,16 @@ FROM node:22-slim
 # 作業ディレクトリ作成
 WORKDIR /app
 
+# システムパッケージの更新
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # OpenClawをグローバルインストール
-RUN npm install -g openclaw@latest
+RUN npm install -g openclaw@latest --verbose
 
-# Renderの環境変数PORTを使用するように変更
-# Renderはランダムなポートを割り当てるため、環境変数から取得する必要があります
-ENV PORT=18789
-
-# ヘルスチェック用のエンドポイント
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:${PORT}/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Renderの環境変数PORTを使用
+ENV PORT=10000
 
 # 起動コマンド
-# $PORT を使ってRenderが指定したポートを使用
-CMD openclaw gateway \
-    --host 0.0.0.0 \
-    --port ${PORT} \
-    --config /etc/secrets/openclaw.json
+CMD ["sh", "-c", "openclaw gateway --host 0.0.0.0 --port ${PORT} --config /etc/secrets/openclaw.json"]
