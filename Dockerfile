@@ -3,11 +3,11 @@ FROM node:22-slim
 # 作業ディレクトリ作成
 WORKDIR /app
 
-# package.jsonとpackage-lock.jsonをコピー
-COPY package*.json ./
+# package.jsonをコピー
+COPY package.json ./
 
 # 依存関係をインストール
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # アプリケーションコードをコピー
 COPY index.js ./
