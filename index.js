@@ -149,9 +149,16 @@ async function searchPlaces({ query, language = 'ja' }) {
       user_ratings_total: place.user_ratings_total || 0,
       open_now: place.opening_hours?.open_now ?? '不明',
       location: place.geometry?.location,
+      maps_url: place.place_id
+        ? `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + place.formatted_address)}`,
     }));
 
-    return { places: results, total_found: response.data.results.length };
+    return {
+      places: results,
+      total_found: response.data.results.length,
+      search_url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`,
+    };
   } catch (error) {
     console.error('Places API error:', error.message);
     return { error: `場所検索に失敗しました: ${error.message}` };
@@ -199,6 +206,9 @@ async function getDirections({ origin, destination, mode = 'transit' }) {
         : undefined,
     }));
 
+    // Google Maps URLを生成（タップでアプリが開く）
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=${mode}`;
+
     return {
       origin: leg.start_address,
       destination: leg.end_address,
@@ -206,6 +216,7 @@ async function getDirections({ origin, destination, mode = 'transit' }) {
       duration: leg.duration?.text,
       steps,
       summary: route.summary,
+      maps_url: mapsUrl,
     };
   } catch (error) {
     console.error('Directions API error:', error.message);
@@ -239,6 +250,7 @@ async function geocode({ address }) {
       location: result.geometry.location,
       place_id: result.place_id,
       types: result.types,
+      maps_url: `https://www.google.com/maps/search/?api=1&query=${result.geometry.location.lat},${result.geometry.location.lng}`,
     }));
 
     return { results };
@@ -312,7 +324,12 @@ const SYSTEM_PROMPT = `あなたは親切で丁寧なアシスタントです。
 回答時の注意：
 - LINE のメッセージなので、簡潔でわかりやすい表現を使う
 - 長すぎる回答は避け、重要なポイントに絞る
-- 絵文字は控えめに使用可`;
+- 絵文字は控えめに使用可
+
+Google Maps リンクのルール：
+- ツール結果に maps_url や search_url が含まれている場合、回答の最後に必ずそのURLを含める
+- 「Google Mapsで開く」のような案内文を添えてURLを貼る（ユーザーがタップするとGoogle Mapsアプリが開く）
+- URLは省略せず、そのまま貼り付ける`;
 
 // ============================================================
 // Expressアプリ
