@@ -9,6 +9,8 @@
   "dependencies": {
     "@line/bot-sdk": "^9.7.0",
     "@anthropic-ai/sdk": "^0.39.0",
+    "@googlemaps/google-maps-services-js": "^3.4.0",
+    "@tavily/core": "^0.7.1",
     "express": "^4.21.2"
   },
   "engines": {

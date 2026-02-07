@@ -1,33 +1,62 @@
 # LINE Claude Bot
 
-LINE Messaging APIとClaude APIを連携させたチャットボット
+LINE Messaging API と Claude AI を連携させたチャットボット。Google Maps API と Tavily Search API によるツール連携で、道案内やWeb検索にも対応。
+
+## 機能
+
+- **AI対話**: Claude による自然な日本語会話
+- **道案内**: Google Maps Directions API による正確なルート案内
+- **場所検索**: Google Maps Places API による周辺施設検索
+- **住所解析**: Google Maps Geocoding API による地名・住所の位置特定
+- **Web検索**: Tavily Search API による最新ニュース・情報検索
+- **自律ツール選択**: Claude の Tool Use 機能により、質問内容に応じてAIが自動でツールを使い分け
 
 ## 必要なもの
 
 - LINE Developers アカウント
 - Anthropic API キー
+- Google Cloud Platform アカウント（Maps API キー）
+- Tavily アカウント（Search API キー）
 - Render アカウント（デプロイ用）
 
 ---
 
 ## セットアップ手順
 
-### 1. LINE Developersでの設定
+### 1. LINE Developers での設定
 
 1. [LINE Developers Console](https://developers.line.biz/console/) にアクセス
 2. チャネルを作成（Messaging API）
 3. 以下の情報を取得：
-   - Channel Access Token
-   - Channel Secret
+   - **Channel Access Token**（長いトークン文字列）
+   - **Channel Secret**
 
 ### 2. Anthropic API キーの取得
 
 1. [Anthropic Console](https://console.anthropic.com/) にアクセス
-2. API Keyを作成
+2. API Key を作成（`sk-ant-` で始まるキー）
 
-### 3. Renderでのデプロイ
+### 3. Google Maps API キーの取得
 
-#### 3-1. GitHubリポジトリを作成
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. 新規プロジェクトを作成
+3. 請求先アカウントを設定（$300 無料トライアル + 月 $200 無料枠）
+4. 「API とサービス」→「ライブラリ」から以下を有効化：
+   - **Directions API**
+   - **Geocoding API**
+   - **Places API**
+5. 「認証情報」→「API キー」を作成
+
+### 4. Tavily API キーの取得
+
+1. [app.tavily.com](https://app.tavily.com) にアクセス
+2. アカウント作成（クレジットカード不要）
+3. ダッシュボードから API キーをコピー（`tvly-` で始まるキー）
+4. 無料枠: 月 1,000 リクエスト
+
+### 5. Render でのデプロイ
+
+#### 5-1. GitHub リポジトリを作成・プッシュ
 
 ```bash
 cd line-claude-bot
@@ -38,153 +67,68 @@ git remote add origin https://github.com/YOUR_USERNAME/line-claude-bot.git
 git push -u origin main
 ```
 
-#### 3-2. Renderで新規サービス作成
+#### 5-2. Render で新規サービス作成
 
 1. [Render Dashboard](https://dashboard.render.com/) にアクセス
 2. 「New +」→「Web Service」を選択
-3. GitHubリポジトリを接続
+3. GitHub リポジトリを接続
 4. 以下の設定：
    - **Name**: `line-claude-bot`
    - **Environment**: `Docker`
    - **Plan**: `Free`
    - **Health Check Path**: `/health`
 
-#### 3-3. Secret Fileの設定
+#### 5-3. 環境変数の設定
 
-Renderの「Environment」タブで：
+Render の「Environment」タブで以下を追加：
 
-1. 「Secret Files」をクリック
-2. 「Add Secret File」をクリック
-3. 以下を設定：
-   - **Filename**: `/etc/secrets/openclaw.json`
-   - **Contents**: `openclaw.json.template` の内容をコピーし、実際のトークンに置き換え
+| 変数名 | 値 |
+|--------|-----|
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE のチャネルアクセストークン |
+| `LINE_CHANNEL_SECRET` | LINE のチャネルシークレット |
+| `ANTHROPIC_API_KEY` | Anthropic の API キー |
+| `GOOGLE_MAPS_API_KEY` | Google Maps の API キー |
+| `TAVILY_API_KEY` | Tavily の API キー |
 
-```json
-{
-  "anthropic": {
-    "apiKey": "sk-ant-YOUR_ACTUAL_KEY_HERE"
-  },
-  "line": {
-    "channelAccessToken": "YOUR_LINE_CHANNEL_ACCESS_TOKEN",
-    "channelSecret": "YOUR_LINE_CHANNEL_SECRET"
-  },
-  "webhook": {
-    "path": "/webhook",
-    "verifySignature": true
-  },
-  "bot": {
-    "name": "Claude Bot",
-    "model": "claude-3-5-sonnet-20241022",
-    "maxTokens": 4096,
-    "temperature": 1.0,
-    "systemPrompt": "あなたは親切で丁寧なアシスタントです。日本語で応答してください。"
-  },
-  "logging": {
-    "level": "info"
-  }
-}
-```
-
-4. 「Save Changes」をクリック
-
-#### 3-4. デプロイ
+#### 5-4. デプロイ
 
 「Manual Deploy」→「Deploy latest commit」をクリック
 
-### 4. LINE DevelopersでWebhook URLを設定
+### 6. LINE Developers で Webhook URL を設定
 
-デプロイ完了後：
-
-1. RenderのサービスURLをコピー（例: `https://line-claude-bot-xxxx.onrender.com`）
-2. LINE Developers Consoleに戻る
-3. 「Messaging API設定」タブ
-4. **Webhook URL**: `https://your-app.onrender.com/webhook`
-5. **Webhookの利用**: 有効化
-6. **応答メッセージ**: 無効化
-7. 「検証」ボタンをクリックして接続テスト
+1. Render のサービス URL をコピー（例: `https://line-claude-bot-xxxx.onrender.com`）
+2. LINE Developers Console →「Messaging API 設定」
+3. **Webhook URL**: `https://your-app.onrender.com/webhook`
+4. **Webhook の利用**: 有効化
+5. **応答メッセージ**: 無効化
+6. 「検証」ボタンで接続テスト
 
 ---
 
 ## 動作確認
 
-### 1. ヘルスチェック
+### ヘルスチェック
 
 ```bash
 curl https://your-app.onrender.com/health
 ```
 
-成功した場合、HTTPステータス200が返されます。
-
-### 2. LINEで友だち追加
-
-LINE Developers Consoleの「Messaging API設定」からQRコードを取得し、友だち追加します。
-
-### 3. メッセージ送信
-
-LINEでメッセージを送信すると、Claudeが応答します。
-
----
-
-## カスタマイズ
-
-### システムプロンプトの変更
-
-`openclaw.json` の `systemPrompt` を編集：
-
+レスポンス例：
 ```json
 {
-  "bot": {
-    "systemPrompt": "あなたはAI専門家です。技術的な質問に詳しく答えてください。"
-  }
+  "status": "ok",
+  "tools": { "google_maps": true, "tavily": true }
 }
 ```
 
-### モデルの変更
+### 使用例
 
-```json
-{
-  "bot": {
-    "model": "claude-3-opus-20240229"  // より高性能なモデル
-  }
-}
-```
+LINE で以下のようなメッセージを送信してみてください：
 
----
-
-## トラブルシューティング
-
-### Webhook検証エラー
-
-LINE側で「Webhookの検証」が失敗する場合：
-
-1. Renderのログを確認
-2. Secret Fileが正しく設定されているか確認
-3. 一時的に `verifySignature: false` に設定してテスト
-
-### 応答がない
-
-1. Renderのログで以下を確認：
-   ```
-   [INFO] Received message from LINE
-   [INFO] Sending to Claude API
-   [INFO] Received response from Claude
-   ```
-
-2. Anthropic APIキーが有効か確認
-
-3. LINE側で「応答メッセージ」が無効化されているか確認
-
-### タイムアウトエラー
-
-Renderの無料プランでは15秒の制限があります。長い応答の場合：
-
-```json
-{
-  "bot": {
-    "maxTokens": 2048  // トークン数を減らす
-  }
-}
-```
+- **一般会話**: 「こんにちは」「Pythonのリスト内包表記を教えて」
+- **道案内**: 「大阪駅から鶴野町への行き方を教えて」
+- **場所検索**: 「渋谷駅近くのおすすめカフェ」
+- **Web検索**: 「今日の日本のニュース」「2026年のAIトレンド」
 
 ---
 
@@ -192,26 +136,30 @@ Renderの無料プランでは15秒の制限があります。長い応答の場
 
 ```
 line-claude-bot/
-├── Dockerfile              # Dockerコンテナ設定
-├── render.yaml             # Render設定
-├── openclaw.json.template  # 設定ファイルテンプレート
-└── README.md               # このファイル
+├── index.js        # メインアプリケーション（ツール連携含む）
+├── package.json    # 依存パッケージ
+├── Dockerfile      # Docker コンテナ設定
+├── render.yaml     # Render 設定
+├── .gitignore      # Git 除外設定
+└── README.md       # このファイル
 ```
 
 ---
 
-## コスト
+## コスト目安
 
-- **Render**: 無料プラン（月750時間）
+- **Render**: 無料プラン（月 750 時間）
 - **LINE**: 無料（Messaging API）
-- **Anthropic API**: 使用量に応じて課金
-  - Claude 3.5 Sonnet: 入力 $3/MTok、出力 $15/MTok
+- **Anthropic API**: Claude Sonnet 4.5 - 入力 $3/MTok、出力 $15/MTok
+- **Google Maps**: 月 $200 無料枠（Directions: $0.005-0.01/リクエスト）
+- **Tavily**: 月 1,000 リクエスト無料
 
 ---
 
 ## 参考リンク
 
-- [OpenClaw Documentation](https://github.com/anthropics/openclaw)
 - [LINE Messaging API](https://developers.line.biz/ja/docs/messaging-api/)
-- [Anthropic API](https://docs.anthropic.com/)
+- [Anthropic API - Tool Use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
+- [Google Maps Platform](https://developers.google.com/maps)
+- [Tavily Search API](https://docs.tavily.com/)
 - [Render Documentation](https://render.com/docs)
